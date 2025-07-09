@@ -1,6 +1,15 @@
 import express from "express";
 import cors from "cors";
 import { handleDemo } from "./routes/demo";
+import {
+  getDonations,
+  createDonation,
+  getTotalRaised,
+} from "./routes/donations";
+import {
+  getSupporterMessages,
+  createSupporterMessage,
+} from "./routes/supporters";
 
 export function createServer() {
   const app = express();
@@ -16,6 +25,14 @@ export function createServer() {
   });
 
   app.get("/api/demo", handleDemo);
+
+  // Arsenal Transfer Fund API routes
+  app.get("/api/donations", getDonations);
+  app.post("/api/donations", createDonation);
+  app.get("/api/donations/total", getTotalRaised);
+
+  app.get("/api/supporters", getSupporterMessages);
+  app.post("/api/supporters", createSupporterMessage);
 
   return app;
 }
