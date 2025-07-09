@@ -12,12 +12,15 @@ import {
   ArrowRight,
   Zap,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { DonationForm } from "@/components/donation-form";
+import {
+  useFundraisingStats,
+  useSupporterMessages,
+} from "@/hooks/use-donations";
 
 export default function Index() {
-  const [currentAmount, setCurrentAmount] = useState(2750000);
-  const targetAmount = 180000000;
-  const progress = (currentAmount / targetAmount) * 100;
+  const { stats, loading: statsLoading } = useFundraisingStats();
+  const { messages, loading: messagesLoading } = useSupporterMessages();
 
   const players = [
     {
@@ -57,44 +60,76 @@ export default function Index() {
     },
   ];
 
-  const supporters = [
-    {
-      name: "Emma Thompson",
-      amount: "£500",
-      message: "COYG! These signings will bring us the title!",
-    },
-    {
-      name: "David Miller",
-      amount: "£250",
-      message: "Arsenal till I die! Let's make this happen!",
-    },
-    {
-      name: "Sarah Wilson",
-      amount: "£1000",
-      message: "For the badge and for glory!",
-    },
-    {
-      name: "James Cooper",
-      amount: "£750",
-      message: "Trust the process, back the team!",
-    },
-    { name: "Lisa Ahmed", amount: "£300", message: "North London is RED!" },
-    {
-      name: "Michael Brown",
-      amount: "£425",
-      message: "These players will transform our season!",
-    },
-    {
-      name: "Alex Kumar",
-      amount: "£600",
-      message: "Invincibles 2.0 loading...",
-    },
-    {
-      name: "Sophie Clarke",
-      amount: "£350",
-      message: "For Arsène, for Arsenal, forever!",
-    },
-  ];
+  // Use Firebase data or fallback to mock data
+  const supporters =
+    messages.length > 0
+      ? messages
+      : [
+          {
+            id: "1",
+            name: "Emma Thompson",
+            amount: 500,
+            message: "COYG! These signings will bring us the title!",
+            createdAt: new Date(),
+            approved: true,
+          },
+          {
+            id: "2",
+            name: "David Miller",
+            amount: 250,
+            message: "Arsenal till I die! Let's make this happen!",
+            createdAt: new Date(),
+            approved: true,
+          },
+          {
+            id: "3",
+            name: "Sarah Wilson",
+            amount: 1000,
+            message: "For the badge and for glory!",
+            createdAt: new Date(),
+            approved: true,
+          },
+          {
+            id: "4",
+            name: "James Cooper",
+            amount: 750,
+            message: "Trust the process, back the team!",
+            createdAt: new Date(),
+            approved: true,
+          },
+          {
+            id: "5",
+            name: "Lisa Ahmed",
+            amount: 300,
+            message: "North London is RED!",
+            createdAt: new Date(),
+            approved: true,
+          },
+          {
+            id: "6",
+            name: "Michael Brown",
+            amount: 425,
+            message: "These players will transform our season!",
+            createdAt: new Date(),
+            approved: true,
+          },
+          {
+            id: "7",
+            name: "Alex Kumar",
+            amount: 600,
+            message: "Invincibles 2.0 loading...",
+            createdAt: new Date(),
+            approved: true,
+          },
+          {
+            id: "8",
+            name: "Sophie Clarke",
+            amount: 350,
+            message: "For Arsène, for Arsenal, forever!",
+            createdAt: new Date(),
+            approved: true,
+          },
+        ];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-arsenal-light-red to-white">
@@ -112,9 +147,7 @@ export default function Index() {
               </p>
             </div>
           </div>
-          <Button className="bg-arsenal-gold text-arsenal-red hover:bg-yellow-400 font-semibold">
-            Donate Now
-          </Button>
+          <DonationForm />
         </div>
       </nav>
 
@@ -135,13 +168,17 @@ export default function Index() {
             the Emirates and compete for the Premier League title.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button
-              size="lg"
-              className="bg-arsenal-gold text-arsenal-red hover:bg-yellow-400 px-8 py-4 text-lg font-bold"
-            >
-              <Heart className="w-5 h-5 mr-2" />
-              Donate Now
-            </Button>
+            <DonationForm
+              trigger={
+                <Button
+                  size="lg"
+                  className="bg-arsenal-gold text-arsenal-red hover:bg-yellow-400 px-8 py-4 text-lg font-bold"
+                >
+                  <Heart className="w-5 h-5 mr-2" />
+                  Donate Now
+                </Button>
+              }
+            />
             <Button
               size="lg"
               variant="outline"
@@ -176,32 +213,37 @@ export default function Index() {
                   </span>
                 </div>
                 <div className="text-3xl font-bold">
-                  £{(currentAmount / 1000000).toFixed(1)}M raised of £
-                  {(targetAmount / 1000000).toFixed(0)}M target
+                  £{(stats.totalRaised / 1000000).toFixed(1)}M raised of £
+                  {(stats.targetAmount / 1000000).toFixed(0)}M target
                 </div>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-8">
-              <Progress value={progress} className="h-6 mb-6" />
+              <Progress value={stats.progress} className="h-6 mb-6" />
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="text-center p-4 bg-arsenal-light-red rounded-lg">
                   <TrendingUp className="w-8 h-8 text-arsenal-red mx-auto mb-2" />
                   <div className="text-2xl font-bold text-arsenal-red">
-                    {progress.toFixed(1)}%
+                    {stats.progress.toFixed(1)}%
                   </div>
                   <div className="text-sm text-gray-600">Complete</div>
                 </div>
                 <div className="text-center p-4 bg-arsenal-light-red rounded-lg">
                   <Users className="w-8 h-8 text-arsenal-red mx-auto mb-2" />
                   <div className="text-2xl font-bold text-arsenal-red">
-                    12,847
+                    {stats.donorCount.toLocaleString()}
                   </div>
                   <div className="text-sm text-gray-600">Supporters</div>
                 </div>
                 <div className="text-center p-4 bg-arsenal-light-red rounded-lg">
                   <Zap className="w-8 h-8 text-arsenal-red mx-auto mb-2" />
                   <div className="text-2xl font-bold text-arsenal-red">
-                    £{((targetAmount - currentAmount) / 1000000).toFixed(1)}M
+                    £
+                    {(
+                      (stats.targetAmount - stats.totalRaised) /
+                      1000000
+                    ).toFixed(1)}
+                    M
                   </div>
                   <div className="text-sm text-gray-600">To Go</div>
                 </div>
@@ -326,7 +368,7 @@ export default function Index() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {supporters.map((supporter, index) => (
               <Card
-                key={index}
+                key={supporter.id || index}
                 className="border-arsenal-red hover:shadow-lg transition-shadow duration-300"
               >
                 <CardContent className="p-6">
@@ -338,7 +380,7 @@ export default function Index() {
                       variant="outline"
                       className="border-arsenal-red text-arsenal-red"
                     >
-                      {supporter.amount}
+                      £{supporter.amount}
                     </Badge>
                   </div>
                   <p className="text-gray-700 italic">"{supporter.message}"</p>
@@ -380,13 +422,17 @@ export default function Index() {
               </div>
             </div>
           </div>
-          <Button
-            size="lg"
-            className="bg-arsenal-gold text-arsenal-red hover:bg-yellow-400 px-12 py-6 text-xl font-bold"
-          >
-            <Heart className="w-6 h-6 mr-3" />
-            Donate to the Arsenal Transfer Fund
-          </Button>
+          <DonationForm
+            trigger={
+              <Button
+                size="lg"
+                className="bg-arsenal-gold text-arsenal-red hover:bg-yellow-400 px-12 py-6 text-xl font-bold"
+              >
+                <Heart className="w-6 h-6 mr-3" />
+                Donate to the Arsenal Transfer Fund
+              </Button>
+            }
+          />
           <p className="text-sm mt-4 opacity-90">
             100% of donations go directly to supporting Arsenal transfers.
             Transparent. Accountable. For the badge.
